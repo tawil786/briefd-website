@@ -5,15 +5,37 @@
   <title>Verifying your Briefd. account…</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
-<body style="font-family: -apple-system, sans-serif; background: #0a0a0a; color: #fff; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0;">
-  <p>Opening Briefd.…</p>
+<body style="font-family: -apple-system, sans-serif; background: #0a0a0a; color: #fff; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; padding: 24px; box-sizing: border-box;">
+  <div>
+    <h2 style="margin: 0 0 12px;">Briefd.</h2>
+    <p id="msg" style="color: #a3a3a3;">Verifying your email…</p>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
+    const SUPABASE_URL = 'https://jqabryaibhetxtwbcpfo.supabase.co';
+    const SUPABASE_ANON_KEY = sb_publishable_i-VppA6_kLGjWAXyS3be5Q_XMemQD3d;
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     const params = new URLSearchParams(window.location.search);
     const tokenHash = params.get('token_hash');
     const type = params.get('type') || 'email';
-    if (tokenHash) {
-      window.location.href = `briefd://auth/callback?token_hash=${encodeURIComponent(tokenHash)}&type=${encodeURIComponent(type)}`;
+    const msg = document.getElementById('msg');
+
+    async function verify() {
+      if (!tokenHash) {
+        msg.textContent = 'Invalid confirmation link.';
+        return;
+      }
+      const { error } = await client.auth.verifyOtp({ token_hash: tokenHash, type });
+      if (error) {
+        msg.textContent = 'Verification failed: ' + error.message;
+        return;
+      }
+      msg.textContent = 'Email confirmed! Opening Briefd.…';
+      window.location.href = 'briefd://auth/callback?confirmed=true';
     }
+
+    verify();
   </script>
 </body>
 </html>
